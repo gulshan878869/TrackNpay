@@ -6,11 +6,26 @@ const Attendance = require("../models/Attendance");
 // SAVE ATTENDANCE
 router.post("/add", async (req, res) => {
   try {
-    const attendance = await Attendance.create(req.body);
+
+    const existing = await Attendance.findOne({
+  employeeId: req.body.employeeId,
+  date: req.body.date,
+});
+
+if (existing) {
+  return res.status(400).json({
+    message: "Attendance already marked",
+  });
+}
+
+    const attendance =
+      await Attendance.create(req.body);
 
     res.json(attendance);
+
   } catch (error) {
-    console.log("Attendance Error:", error);
+
+    console.log(error);
 
     res.status(500).json({
       message: error.message,

@@ -70,6 +70,9 @@ const Attendence = () => {
         Mark Daily Attendance
       </p>
 
+<p className="text-lg font-semibold text-blue-700 mb-4">
+  Date : {new Date().toLocaleDateString()}
+</p>
       <div className="bg-white shadow-lg rounded-lg p-6 overflow-x-auto">
         <table className="w-full border">
           <thead>
