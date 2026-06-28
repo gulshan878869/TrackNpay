@@ -5,6 +5,11 @@ const payrollSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  userId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User-su",
+  required: true,
+},
 
   name: String,
 
@@ -28,6 +33,14 @@ const payrollSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  paid: {
+  type: Boolean,
+  default: false,
+},
+
+paidDate: {
+  type: Date,
+}
 });
 
 module.exports = mongoose.model(

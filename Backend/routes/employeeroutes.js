@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 const Employee = require("../models/employee");
 
 // ADD EMPLOYEE
-router.post("/add", async (req, res) => {
+router.post("/add", auth, async (req, res) => {
   try {
     const year = new Date()
       .getFullYear()
@@ -14,15 +15,20 @@ router.post("/add", async (req, res) => {
     const dept = req.body.department
       .toUpperCase();
 
-    const totalEmployees =
-      await Employee.countDocuments();
+  const lastEmployee = await Employee.findOne({
+  userId: req.userId,
+  department: req.body.department,
+}).sort({ createdAt: -1 });
 
-    const serial = String(
-      totalEmployees + 1
-    ).padStart(4, "0");
+let serial = 1;
 
-    const employeeId =
-      `${year}/${dept}/${serial}`;
+if (lastEmployee) {
+  serial =
+    parseInt(lastEmployee.employeeId.split("/")[2]) + 1;
+}
+
+const employeeId =
+  `${year}/${dept}/${String(serial).padStart(4, "0")}`;
 
     const employee =
       await Employee.create({
@@ -31,6 +37,7 @@ router.post("/add", async (req, res) => {
         email: req.body.email,
         department: req.body.department,
         salary: req.body.salary,
+        userId: req.userId,
       });
 
     res.status(201).json(employee);
@@ -49,10 +56,13 @@ router.post("/add", async (req, res) => {
 });
 
 // VIEW ALL EMPLOYEES
-router.get("/view", async (req, res) => {
+router.get("/view", auth, async (req, res) => {
   try {
+
     const employees =
-      await Employee.find();
+      await Employee.find({
+        userId: req.userId,
+      });
 
     res.json(employees);
 
@@ -67,12 +77,14 @@ router.get("/view", async (req, res) => {
 });
 
 // VIEW SINGLE EMPLOYEE
-router.get("/view/:id", async (req, res) => {
+router.get("/view/:id", auth, async (req, res) => {
   try {
+
     const employee =
-      await Employee.findById(
-        req.params.id
-      );
+      await Employee.findOne({
+        _id: req.params.id,
+        userId: req.userId,
+      });
 
     res.json(employee);
 
@@ -87,11 +99,15 @@ router.get("/view/:id", async (req, res) => {
 });
 
 // UPDATE EMPLOYEE
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id", auth, async (req, res) => {
   try {
+
     const employee =
-      await Employee.findByIdAndUpdate(
-        req.params.id,
+      await Employee.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          userId: req.userId,
+        },
         req.body,
         { new: true }
       );
@@ -109,11 +125,13 @@ router.put("/update/:id", async (req, res) => {
 });
 
 // DELETE EMPLOYEE
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", auth, async (req, res) => {
   try {
-    await Employee.findByIdAndDelete(
-      req.params.id
-    );
+
+    await Employee.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId,
+    });
 
     res.json({
       message:
@@ -131,10 +149,13 @@ router.delete("/delete/:id", async (req, res) => {
 });
 
 // TOTAL EMPLOYEES
-router.get("/count/all", async (req, res) => {
+router.get("/count/all", auth, async (req, res) => {
   try {
+
     const totalEmployees =
-      await Employee.countDocuments();
+      await Employee.countDocuments({
+        userId: req.userId,
+      });
 
     res.json({
       totalEmployees,
@@ -151,10 +172,13 @@ router.get("/count/all", async (req, res) => {
 });
 
 // TOTAL PAYROLL
-router.get("/payroll/total", async (req, res) => {
+router.get("/payroll/total", auth, async (req, res) => {
   try {
+
     const employees =
-      await Employee.find();
+      await Employee.find({
+        userId: req.userId,
+      });
 
     const totalPayroll =
       employees.reduce(

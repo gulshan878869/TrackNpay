@@ -15,41 +15,58 @@ const EmployeeList = () => {
     salary: "",
   });
 
-  const fetchEmployees = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:3000/api/employee/view"
-      );
+  // FETCH EMPLOYEES
+// FETCH EMPLOYEES
+useEffect(() => {
+  fetchEmployees();
+}, []);
 
-      setEmployees(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+const fetchEmployees = async () => {
+  try {
+    const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  // DELETE EMPLOYEE
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this employee?"
+    const res = await axios.get(
+      "http://localhost:3000/api/employee/view",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
-    if (!confirmDelete) return;
+    setEmployees(res.data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+  // DELETE EMPLOYEE
+const handleDelete = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this employee?"
+  );
 
-    try {
-      await axios.delete(
-        `http://localhost:3000/api/employee/delete/${id}`
-      );
+  if (!confirmDelete) return;
 
-      alert("Employee Deleted Successfully");
-      fetchEmployees();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
+
+    await axios.delete(
+      `http://localhost:3000/api/employee/delete/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Employee Deleted Successfully");
+
+    fetchEmployees();
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   // OPEN EDIT FORM
   const handleEditClick = (emp) => {
@@ -66,25 +83,35 @@ const EmployeeList = () => {
   };
 
   // UPDATE EMPLOYEE
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+  
+const handleUpdate = async (e) => {
+  e.preventDefault();
 
-    try {
-      await axios.put(
-        `http://localhost:3000/api/employee/update/${editEmployee._id}`,
-        editEmployee
-      );
+  try {
+    const token = localStorage.getItem("token");
 
-      alert("Employee Updated Successfully");
+    await axios.put(
+      `http://localhost:3000/api/employee/update/${editEmployee._id}`,
+      editEmployee,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      setIsEditing(false);
-      fetchEmployees();
-    } catch (error) {
-      console.log(error);
-      alert("Update Failed");
-    }
-  };
+    alert("Employee Updated Successfully");
 
+    setIsEditing(false);
+
+    fetchEmployees();
+
+  } catch (error) {
+    console.log(error);
+
+    alert("Update Failed");
+  }
+};
   // SEARCH
   const filteredEmployees = employees.filter(
     (emp) =>

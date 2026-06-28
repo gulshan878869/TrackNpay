@@ -16,49 +16,82 @@ const Payroll = () => {
   );
 
   useEffect(() => {
-    fetchHistory(
-      selectedMonth,
-      selectedYear
+  fetchHistory(selectedMonth, selectedYear);
+}, [selectedMonth, selectedYear]);
+// FETCH PAYROLL HISTORY
+const fetchHistory = async (month, year) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `http://localhost:3000/api/payroll/history?month=${month}&year=${year}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
-  }, []);
 
-  const fetchHistory = async (
-    month,
-    year
-  ) => {
-    try {
-      const res = await axios.get(
-        `http://localhost:3000/api/payroll/history?month=${month}&year=${year}`
-      );
-
-      setPayroll(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+    setPayroll(res.data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+// GENERATE PAYROLL
   const generatePayroll = async () => {
-    try {
-      await axios.post(
-        "http://localhost:3000/api/payroll/generate"
-      );
+  try {
+    const token = localStorage.getItem("token");
 
-      fetchHistory(
-        selectedMonth,
-        selectedYear
-      );
+    await axios.post(
+      "http://localhost:3000/api/payroll/generate",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      alert(
-        "Payroll Generated Successfully"
-      );
-    } catch (error) {
-      console.log(error);
+    fetchHistory(selectedMonth, selectedYear);
 
-      alert(
-        "Error Generating Payroll"
-      );
-    }
-  };
+    alert("Payroll Generated Successfully");
+  } catch (error) {
+    console.log(error);
+
+    alert("Error Generating Payroll");
+  }
+};
+// PAY SALARY
+  const paySalary = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `http://localhost:3000/api/payroll/pay/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setPayroll((prev) =>
+      prev.map((emp) =>
+        emp._id === id ? { ...emp, paid: true } : emp
+      )
+    );
+
+    alert("Salary Paid Successfully");
+
+    fetchHistory(selectedMonth, selectedYear);
+  } catch (error) {
+    console.log(error);
+
+    alert("Error Paying Salary");
+  }
+};
+// DOWNLOAD PDF
 
   const downloadPDF = (emp) => {
     const doc = new jsPDF();
@@ -206,6 +239,9 @@ const Payroll = () => {
               <th className="p-3">
                 Salary Slip
               </th>
+              <th className="p-3">
+                Payment Status
+              </th>
 
             </tr>
 
@@ -253,6 +289,7 @@ const Payroll = () => {
                   <td className="p-3 text-blue-600 font-bold">
                     ₹{emp.earnedSalary}
                   </td>
+                 
 
                   <td className="p-3">
 
@@ -268,6 +305,21 @@ const Payroll = () => {
                     </button>
 
                   </td>
+                  <td className="p-3">
+  {emp.paid ? (
+    <span className="text-green-600 font-bold">
+      ✅ Paid
+    </span>
+  ) : (
+    <button
+      onClick={() => paySalary(emp._id)}
+      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+    >
+      Pay Now
+    </button>
+  )}
+</td>
+             
 
                 </tr>
 

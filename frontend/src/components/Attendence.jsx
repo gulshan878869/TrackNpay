@@ -9,17 +9,25 @@ const Attendence = () => {
     fetchEmployees();
   }, []);
 
-  const fetchEmployees = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:3000/api/employee/view"
-      );
+const fetchEmployees = async () => {
+  try {
+    const token = localStorage.getItem("token");
 
-      setEmployees(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    const res = await axios.get(
+      "http://localhost:3000/api/employee/view",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setEmployees(res.data);
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const handleAttendance = (id, status) => {
     setAttendance((prev) => ({
@@ -28,37 +36,41 @@ const Attendence = () => {
     }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const today = new Date()
-        .toISOString()
-        .split("T")[0];
+ const handleSubmit = async () => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const token = localStorage.getItem("token");
 
-      const promises = employees
-        .filter((emp) => attendance[emp._id])
-        .map((emp) =>
-          axios.post(
-            "http://localhost:3000/api/attendance/add",
-            {
-              employeeId: emp.employeeId, // 26/IT/0001
-              name: emp.name,
-              department: emp.department,
-              date: today,
-              status: attendance[emp._id],
-            }
-          )
-        );
+    const promises = employees
+      .filter((emp) => attendance[emp._id])
+      .map((emp) =>
+        axios.post(
+          "http://localhost:3000/api/attendance/add",
+          {
+            employeeId: emp.employeeId,
+            name: emp.name,
+            department: emp.department,
+            date: today,
+            status: attendance[emp._id],
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+      );
 
-      await Promise.all(promises);
+    await Promise.all(promises);
 
-      alert("Attendance Saved Successfully");
+    alert("Attendance Marked Successfully");
+    setAttendance({});
 
-      setAttendance({});
-    } catch (error) {
-      console.log(error);
-      alert("Error Saving Attendance");
-    }
-  };
+  } catch (error) {
+    console.log(error);
+    alert(error.response?.data?.message || "Attendance Error");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">

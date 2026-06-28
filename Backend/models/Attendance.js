@@ -15,7 +15,11 @@ const attendanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-
+userId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User-su",
+  required: true,
+},
   date: {
     type: String,
     default: () =>

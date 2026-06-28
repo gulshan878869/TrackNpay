@@ -7,34 +7,46 @@ const Dashboard = () => {
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [present, setPresent] = useState(0);
   const [absent, setAbsent] = useState(0);
+  const [totalPayroll, setTotalPayroll] = useState(0);
 
   const fetchDashboardData = async () => {
-    try {
-      const empRes = await axios.get(
-        "http://localhost:3000/api/employee/count/all"
-      );
+  try {
+    const token = localStorage.getItem("token");
 
-      const attRes = await axios.get(
-        "http://localhost:3000/api/attendance/summary"
-      );
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
-      setTotalEmployees(
-        empRes.data.totalEmployees
-      );
+    const empRes = await axios.get(
+      "http://localhost:3000/api/employee/count/all",
+      config
+    );
 
-      setPresent(
-        attRes.data.present
-      );
+    const attRes = await axios.get(
+      "http://localhost:3000/api/attendance/summary",
+      config
+    );
 
-      setAbsent(
-        attRes.data.absent
-      );
+    const payrollRes = await axios.get(
+      "http://localhost:3000/api/payroll/view",
+      config
+    );
 
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    const paidAmount = payrollRes.data
+      .filter((emp) => emp.paid)
+      .reduce((sum, emp) => sum + emp.earnedSalary, 0);
 
+    setTotalEmployees(empRes.data.totalEmployees);
+    setPresent(attRes.data.present);
+    setAbsent(attRes.data.absent);
+    setTotalPayroll(paidAmount);
+
+  } catch (error) {
+    console.log(error.response?.data || error);
+  }
+};
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -54,7 +66,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-200 to-blue-100 p-8">
 
-      {/* Date & Time Top Right */}
+      {/* Date & Time */}
       <div className="flex justify-end mb-6">
         <div className="text-right">
           <p className="text-gray-700 font-semibold">
@@ -77,9 +89,10 @@ const Dashboard = () => {
         attendance and payroll efficiently.
       </p>
 
-      {/* Summary Cards */}
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
+        {/* Total Employees */}
         <div className="bg-blue-600 text-white p-6 rounded-xl shadow-lg">
           <h2 className="text-xl font-semibold">
             Total Employees
@@ -90,6 +103,7 @@ const Dashboard = () => {
           </p>
         </div>
 
+        {/* Present */}
         <div className="bg-green-600 text-white p-6 rounded-xl shadow-lg">
           <h2 className="text-xl font-semibold">
             Present Today
@@ -100,6 +114,7 @@ const Dashboard = () => {
           </p>
         </div>
 
+        {/* Absent */}
         <div className="bg-red-600 text-white p-6 rounded-xl shadow-lg">
           <h2 className="text-xl font-semibold">
             Absent Today
@@ -110,13 +125,14 @@ const Dashboard = () => {
           </p>
         </div>
 
+        {/* Paid Payroll */}
         <div className="bg-purple-600 text-white p-6 rounded-xl shadow-lg">
           <h2 className="text-xl font-semibold">
-            Monthly Payroll
+            Paid Payroll
           </h2>
 
-          <p className="text-2xl font-bold mt-2">
-            Coming Soon
+          <p className="text-3xl font-bold mt-2">
+            ₹{totalPayroll}
           </p>
         </div>
 

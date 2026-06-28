@@ -19,39 +19,56 @@ const AddEmployee = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      await axios.post(
-        "http://localhost:3000/api/employee/add",
-        employee
-      );
+  try {
+    const token = localStorage.getItem("token");
+    console.log("TOKEN =", token);
+    await axios.post(
+      "http://localhost:3000/api/employee/add",
+      employee,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      alert("Employee added successfully!");
+    alert("Employee added successfully!");
 
-      setEmployee({
-        name: "",
-        email: "",
-        department: "",
-        salary: "",
-      });
+    setEmployee({
+      name: "",
+      email: "",
+      department: "",
+      salary: "",
+    });
 
-      navigate("/employees");
-    } catch (error) {
-      console.error("Error adding employee:", error);
-      alert("Failed to add employee");
-    }
-  };
+    navigate("/employees");
+
+  } catch (error) {
+    console.log(error.response?.data);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to add employee"
+    );
+  }
+};
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-slate-100 to-blue-100">
+
       <h1 className="text-4xl font-bold text-blue-800 mb-6">
         Add Employee
       </h1>
 
       <div className="max-w-2xl bg-white shadow-lg rounded-xl p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
 
           <input
             type="text"
@@ -95,13 +112,15 @@ const AddEmployee = () => {
 
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           >
             Add Employee
           </button>
 
         </form>
+
       </div>
+
     </div>
   );
 };

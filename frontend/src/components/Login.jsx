@@ -26,10 +26,13 @@ const Login = () => {
         form
       );
 
-      localStorage.setItem("token", res.data.token);
-      alert("Login Successful");
+    localStorage.setItem("token", res.data.token);
 
-      navigate("/home");
+console.log("Saved Token:", localStorage.getItem("token"));
+
+alert("Login Successful");
+
+navigate("/home");
     } catch (err) {
       console.log(err);
       alert("Invalid Email or Password");

@@ -1,155 +1,191 @@
 const express = require("express");
 const router = express.Router();
 
+const auth = require("../middleware/auth");
+
 const Employee = require("../models/employee");
 const Attendance = require("../models/Attendance");
 const Payroll = require("../models/Payroll");
 
-router.post("/generate", async (req, res) => {
-  try {
-    const employees = await Employee.find();
+// ================= GENERATE PAYROLL =================
 
+router.post("/generate", auth, async (req, res) => {
+  try {
     const month = new Date().getMonth() + 1;
     const year = new Date().getFullYear();
 
-    const result = [];
+    const employees = await Employee.find({
+      userId: req.userId,
+    });
+
+    const payrollData = [];
 
     for (const emp of employees) {
 
-      const alreadyGenerated =
-        await Payroll.findOne({
-          employeeId: emp.employeeId,
-          month,
-          year,
-        });
+      // Count attendance of current month
+      const presentDays = await Attendance.countDocuments({
+        userId: req.userId,
+        employeeId: emp.employeeId,
+        status: "Present",
+        month,
+        year,
+      });
 
-      if (alreadyGenerated) {
-        result.push(alreadyGenerated);
-        continue;
-      }
+      const absentDays = await Attendance.countDocuments({
+        userId: req.userId,
+        employeeId: emp.employeeId,
+        status: "Absent",
+        month,
+        year,
+      });
 
-      const presentDays =
-        await Attendance.countDocuments({
-          employeeId: emp.employeeId,
-          status: "Present",
-        });
+      const leaveDays = await Attendance.countDocuments({
+        userId: req.userId,
+        employeeId: emp.employeeId,
+        status: "Leave",
+        month,
+        year,
+      });
 
-      const absentDays =
-        await Attendance.countDocuments({
-          employeeId: emp.employeeId,
-          status: "Absent",
-        });
+      const earnedSalary = Math.round(
+        (emp.salary / 30) * presentDays
+      );
 
-      const leaveDays =
-        await Attendance.countDocuments({
-          employeeId: emp.employeeId,
-          status: "Leave",
-        });
+      let payroll = await Payroll.findOne({
+        userId: req.userId,
+        employeeId: emp.employeeId,
+        month,
+        year,
+      });
 
-      const dailySalary =
-        emp.salary / 30;
+      if (payroll) {
+        // Update existing payroll
+        payroll.monthlySalary = emp.salary;
+        payroll.presentDays = presentDays;
+        payroll.absentDays = absentDays;
+        payroll.leaveDays = leaveDays;
+        payroll.earnedSalary = earnedSalary;
 
-      const earnedSalary =
-        Math.round(
-          dailySalary * presentDays
-        );
-
-      const payroll =
-        await Payroll.create({
+        await payroll.save();
+      } else {
+        // Create new payroll
+        payroll = await Payroll.create({
+          userId: req.userId,
           employeeId: emp.employeeId,
           name: emp.name,
           department: emp.department,
-
           month,
           year,
-
           monthlySalary: emp.salary,
-
           presentDays,
           absentDays,
           leaveDays,
-
           earnedSalary,
+          paid: false,
         });
+      }
 
-      result.push(payroll);
+      payrollData.push(payroll);
     }
 
-    res.status(200).json(result);
+    res.json(payrollData);
 
-  } catch (error) {
-    console.log(error);
-
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: "Error generating payroll",
     });
   }
 });
-router.get("/view", async (req, res) => {
+
+// ================= CURRENT MONTH =================
+
+router.get("/view", auth, async (req, res) => {
   try {
     const month = new Date().getMonth() + 1;
     const year = new Date().getFullYear();
 
     const payroll = await Payroll.find({
+      userId: req.userId,
       month,
       year,
     });
 
-    res.status(200).json(payroll);
-
-  } catch (error) {
-    console.log(error);
-
+    res.json(payroll);
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: "Error fetching payroll",
     });
   }
 });
-router.get(
-  "/history/:employeeId",
-  async (req, res) => {
-    try {
 
-      const history =
-        await Payroll.find({
-          employeeId:
-            req.params.employeeId,
-        }).sort({
-          year: -1,
-          month: -1,
-        });
+// ================= MONTH HISTORY =================
 
-      res.status(200).json(history);
-
-    } catch (error) {
-
-      console.log(error);
-
-      res.status(500).json({
-        message:
-          "Error fetching history",
-      });
-    }
-  }
-);
-
-router.get("/history", async (req, res) => {
+router.get("/history", auth, async (req, res) => {
   try {
     const month = Number(req.query.month);
     const year = Number(req.query.year);
 
     const payroll = await Payroll.find({
+      userId: req.userId,
       month,
       year,
     });
 
-    res.status(200).json(payroll);
-
-  } catch (error) {
-    console.log(error);
-
+    res.json(payroll);
+  } catch (err) {
+    console.log(err);
     res.status(500).json({
-      message: "Error fetching payroll history",
+      message: "Error fetching payroll",
+    });
+  }
+});
+
+// ================= EMPLOYEE HISTORY =================
+
+router.get("/history/:employeeId", auth, async (req, res) => {
+  try {
+    const payroll = await Payroll.find({
+      userId: req.userId,
+      employeeId: req.params.employeeId,
+    }).sort({
+      year: -1,
+      month: -1,
+    });
+
+    res.json(payroll);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Error fetching history",
+    });
+  }
+});
+
+// ================= PAY SALARY =================
+
+router.put("/pay/:id", auth, async (req, res) => {
+  try {
+    const payroll = await Payroll.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.userId,
+      },
+      {
+        paid: true,
+        paidDate: new Date(),
+      },
+      {
+        new: true,
+      }
+    );
+
+    res.json(payroll);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Error paying salary",
     });
   }
 });

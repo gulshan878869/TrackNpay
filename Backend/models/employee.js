@@ -24,7 +24,12 @@ const employeeSchema = new mongoose.Schema({
     salary: {
         type: Number,
         required: true
-    }
+    },
+    userId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User-su",
+  required: true,
+},
 });
 
 module.exports = mongoose.model('Employee', employeeSchema);
