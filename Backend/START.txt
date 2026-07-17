@@ -1,0 +1,128 @@
+                    START
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │  Computer Fundamentals  │
+         │  (Basic CS Knowledge)   │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │     HTML + CSS          │
+         │ (10–15 Days)            │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │     Java Basics         │
+         │ (15–20 Days)            │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │        OOP              │
+         │ (Class, Object, etc.)   │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ Exception Handling      │
+         │ + Collections Framework │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │      DSA                │
+         │ Arrays → Graph          │
+         │ (4–6 Months)            │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ SQL + DBMS              │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ Operating System        │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ Computer Networks       │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ Aptitude + Reasoning    │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ JavaScript + React      │
+         │ (Continue Projects)     │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ Resume + GitHub         │
+         └─────────────────────────┘
+                      │
+                      ▼
+         ┌─────────────────────────┐
+         │ Mock Tests + Interview  │
+         └─────────────────────────┘
+                      │
+                      ▼
+                 🎉 PLACEMENT
+
+
+| Topic                 | Kaha se padho                      |
+| --------------------- | ---------------------------------- |
+| Computer Fundamentals | GeeksforGeeks + YouTube            |
+| HTML & CSS            | Apna College                       |
+| Java                  | Kunal Kushwaha **ya** Apna College |
+| OOP                   | Kunal Kushwaha                     |
+| Collections           | Kunal Kushwaha                     |
+| DSA                   | Love Babbar + Striver A2Z Sheet    |
+| SQL                   | CodeWithHarry / Apna College       |
+| DBMS                  | Gate Smashers                      |
+| Operating System      | Gate Smashers                      |
+| Computer Networks     | Gate Smashers                      |
+| Aptitude              | IndiaBIX + R.S. Aggarwal           |
+| Resume                | Overleaf (LaTeX) ya Canva          |
+| Mock Interview        | Pramp ya ChatGPT                   |
+
+
+DSA ORDER-------
+
+
+Arrays
+   ↓
+Strings
+   ↓
+Recursion
+   ↓
+Searching
+   ↓
+Sorting
+   ↓
+Linked List
+   ↓
+Stack
+   ↓
+Queue
+   ↓
+Hashing
+   ↓
+Trees
+   ↓
+BST
+   ↓
+Heap
+   ↓
+Graph
+   ↓
+Dynamic Programming
+
+
